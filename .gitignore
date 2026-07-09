@@ -1,0 +1,25 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+*.tsbuildinfo
+apps/player/dist/
+apps/host/assets/playerBundle.ts
+
+# expo / native
+apps/host/.expo/
+apps/host/ios/
+apps/host/android/
+apps/host/web-build/
+
+# env & secrets
+.env
+.env.*
+
+# misc
+.DS_Store
+*.log
+coverage/

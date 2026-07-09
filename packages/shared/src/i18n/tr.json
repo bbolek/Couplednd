@@ -1,0 +1,141 @@
+{
+  "app": {
+    "name": "Family Quest",
+    "tagline": "Sevdiğiniz dünyalarda maceralar"
+  },
+  "common": {
+    "continue": "Devam",
+    "back": "Geri",
+    "cancel": "Vazgeç",
+    "done": "Tamam",
+    "retry": "Tekrar dene",
+    "loading": "Yükleniyor…",
+    "you": "Sen"
+  },
+  "home": {
+    "newGame": "Yeni macera",
+    "continueGame": "Maceraya devam et",
+    "settings": "Ayarlar"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "apiKey": "Claude API anahtarı",
+    "apiKeyHint": "Sadece bu telefonda saklanır. console.anthropic.com adresinden alabilirsiniz",
+    "apiKeyPlaceholder": "sk-ant-…",
+    "testKey": "Anahtarı dene",
+    "keyWorks": "Anahtarınız çalışıyor! ✨",
+    "keyFailed": "Bu anahtar çalışmadı. Kontrol edip tekrar deneyin.",
+    "model": "Zindan Ustası'nın beyni",
+    "modelBest": "En büyülü (önerilen)",
+    "modelBalanced": "Dengeli",
+    "modelFast": "En hızlı ve ekonomik",
+    "language": "Dil",
+    "costSoFar": "Bu macera şimdiye dek yaklaşık {{cost}} tuttu"
+  },
+  "newGame": {
+    "title": "Yeni macera",
+    "showsPrompt": "Aileniz hangi dizi ya da filmleri seviyor?",
+    "showsHint": "Bir ya da birkaç tane ekleyin — hepsini tek bir dünyada birleştireceğiz!",
+    "showsPlaceholder": "örn. Bluey, Star Wars…",
+    "add": "Ekle",
+    "audiencePrompt": "Bu gece kimler oynuyor?",
+    "audienceKids": "Küçük çocuklar",
+    "audienceKidsHint": "Tatlı bir masal tadında, ~4-8 yaş",
+    "audienceFamily": "Tüm aile",
+    "audienceFamilyHint": "Çocuklar ve büyükler birlikte",
+    "audienceGrownups": "Yetişkinler",
+    "audienceGrownupsHint": "Çift gecesi ya da arkadaşlar — daha esprili, gerçek heyecan",
+    "buildWorld": "Dünyamızı kur",
+    "building": "Dünyanız kuruluyor…",
+    "buildingHint": "Zindan Ustası okuyor, hayal ediyor ve haritalar çiziyor"
+  },
+  "lobby": {
+    "title": "Ekibi topla!",
+    "scanToJoin": "Katılmak için telefon kamerasıyla okutun",
+    "orVisit": "veya bu adresi telefonunuzun tarayıcısında açın",
+    "joined": "{{count}} maceracı katıldı",
+    "joined_other": "{{count}} maceracı katıldı",
+    "waitingForCharacters": "Herkesin karakterini oluşturması bekleniyor…",
+    "createMyCharacter": "Karakterimi oluştur",
+    "startAdventure": "Macerayı başlat!",
+    "sameWifiHint": "Bağlanamıyor mu? Herkesin aynı WiFi ağında olduğundan emin olun."
+  },
+  "character": {
+    "title": "Kahramanını yarat",
+    "stepConcept": "Kim olacaksın?",
+    "stepConceptHint": "Zindan Ustası bunları dünyanız için hayal etti",
+    "stepName": "Kahramanına isim ver",
+    "stepNameHint": "Öneriyi kullanabilir ya da kendin uydurabilirsin",
+    "stepAvatar": "Görünüşünü seç",
+    "stepAvatarHint": "Bir yüz ve en sevdiğin rengi seç",
+    "stepStats": "Güçlü yönlerini seç",
+    "stepStatsHint": "{{points}} puanı yeteneklerin arasında paylaştır",
+    "pointsLeft": "{{count}} puan kaldı",
+    "pointsLeft_other": "{{count}} puan kaldı",
+    "stat_brave": "Cesur",
+    "stat_smart": "Zeki",
+    "stat_charm": "Sevimli",
+    "stat_sneaky": "Sinsi",
+    "ready": "Hazırım!",
+    "waitingOthers": "Katıldın! Diğerleri bekleniyor…"
+  },
+  "join": {
+    "title": "Maceraya katıl",
+    "namePrompt": "Adın ne?",
+    "namePlaceholder": "Adın",
+    "join": "Katıl",
+    "reconnecting": "Maceraya yeniden bağlanılıyor…",
+    "gameNotFound": "Hmm, bu macerayı bulamadık. Ev sahibine kontrol ettirin!",
+    "gameFull": "Ekip doldu — en fazla 7 maceracı katılabilir."
+  },
+  "play": {
+    "yourTurnSoon": "Hikâye devam ediyor…",
+    "dmThinking": "Zindan Ustası düşünüyor…",
+    "whatDoYouDo": "Ne yapıyorsun?",
+    "actionPlaceholder": "Şey yapmak istiyorum…",
+    "send": "Gönder",
+    "waitingOn": "{{name}} bekleniyor…",
+    "knockedOut": "{{name}} bayıldı, kurtarılması gerek!",
+    "rescued": "{{name}} yeniden ayakta!",
+    "itemAwarded": "{{name}} şunu kazandı: {{item}}!",
+    "suggestion1": "Etrafa bak",
+    "suggestion2": "Onlarla konuş",
+    "suggestion3": "Sessizce yaklaş"
+  },
+  "dice": {
+    "title": "{{stat}} zarı at!",
+    "reason": "{{reason}}",
+    "tapToRoll": "Zara dokun (ya da telefonu salla!)",
+    "rolling": "Atılıyor…",
+    "critSuccess": "MUHTEŞEM! Doğal 20!",
+    "success": "Başarılı!",
+    "fail": "Eyvah, olmadı…",
+    "fumble": "Aman! Tam bir sakarlık!",
+    "total": "{{raw}} + {{bonus}} = {{total}}"
+  },
+  "task": {
+    "title": "Zindan Ustası sana soruyor…"
+  },
+  "table": {
+    "party": "Ekip",
+    "scene": "Sahne",
+    "log": "Macera günlüğü",
+    "pause": "Duraklat",
+    "resume": "Devam et",
+    "nudge": "Hikâyeye dokun",
+    "endScene": "Sahneyi bitir",
+    "offline": "uzakta",
+    "hostBadge": "Ev sahibi"
+  },
+  "recap": {
+    "title": "Macera sona eriyor…",
+    "playAgain": "Tekrar oyna",
+    "highlights": "Bu gecenin en güzel anları"
+  },
+  "errors": {
+    "dmConfused": "Zindan Ustası'nın kafası biraz karıştı. Hadi tekrar deneyelim!",
+    "noKey": "Maceraya başlamak için Ayarlar'a Claude API anahtarınızı ekleyin.",
+    "rateLimited": "Zindan Ustası kısa bir mola veriyor — tekrar deneniyor…",
+    "network": "Bağlantı koptu. Yeniden deneniyor…"
+  }
+}

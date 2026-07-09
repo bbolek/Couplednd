@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Family Quest",
+    "slug": "family-quest",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#FAF3E3"
+    },
+    "ios": {
+      "bundleIdentifier": "com.familyquest.app",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "Family Quest hosts the game on your phone so family members can join from their browsers over your home WiFi.",
+        "UIRequiresFullScreen": true
+      }
+    },
+    "android": {
+      "package": "com.familyquest.app",
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "ACCESS_WIFI_STATE"]
+    },
+    "plugins": ["expo-dev-client", "expo-secure-store", "expo-font", "expo-localization"]
+  }
+}

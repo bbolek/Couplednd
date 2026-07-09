@@ -1,0 +1,141 @@
+{
+  "app": {
+    "name": "Family Quest",
+    "tagline": "Adventures in the worlds you love"
+  },
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "cancel": "Cancel",
+    "done": "Done",
+    "retry": "Try again",
+    "loading": "Loading…",
+    "you": "You"
+  },
+  "home": {
+    "newGame": "New adventure",
+    "continueGame": "Continue adventure",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "apiKey": "Claude API key",
+    "apiKeyHint": "Stored only on this phone. Get one at console.anthropic.com",
+    "apiKeyPlaceholder": "sk-ant-…",
+    "testKey": "Test key",
+    "keyWorks": "Your key works! ✨",
+    "keyFailed": "That key didn't work. Double-check and try again.",
+    "model": "Dungeon Master brain",
+    "modelBest": "Most magical (recommended)",
+    "modelBalanced": "Great value",
+    "modelFast": "Fastest & cheapest",
+    "language": "Language",
+    "costSoFar": "This adventure has cost about {{cost}}"
+  },
+  "newGame": {
+    "title": "New adventure",
+    "showsPrompt": "Which shows or movies does your family love?",
+    "showsHint": "Add one or more — we'll mix them into one world!",
+    "showsPlaceholder": "e.g. Bluey, Star Wars…",
+    "add": "Add",
+    "audiencePrompt": "Who's playing tonight?",
+    "audienceKids": "Little kids",
+    "audienceKidsHint": "Gentle wonder, ages ~4-8",
+    "audienceFamily": "The whole family",
+    "audienceFamilyHint": "Kids & grown-ups together",
+    "audienceGrownups": "Grown-ups",
+    "audienceGrownupsHint": "Date night or friends — wittier, real stakes",
+    "buildWorld": "Build our world",
+    "building": "Building your world…",
+    "buildingHint": "The Dungeon Master is reading, imagining, and drawing maps"
+  },
+  "lobby": {
+    "title": "Gather the party!",
+    "scanToJoin": "Scan with your phone camera to join",
+    "orVisit": "or open this address in your phone's browser",
+    "joined": "{{count}} adventurer joined",
+    "joined_other": "{{count}} adventurers joined",
+    "waitingForCharacters": "Waiting for everyone to create a character…",
+    "createMyCharacter": "Create my character",
+    "startAdventure": "Start the adventure!",
+    "sameWifiHint": "Not connecting? Make sure everyone is on the same WiFi."
+  },
+  "character": {
+    "title": "Create your hero",
+    "stepConcept": "Who will you be?",
+    "stepConceptHint": "The Dungeon Master imagined these just for your world",
+    "stepName": "Name your hero",
+    "stepNameHint": "You can keep the suggestion or invent your own",
+    "stepAvatar": "Pick your look",
+    "stepAvatarHint": "Choose a face and a favorite color",
+    "stepStats": "Choose your strengths",
+    "stepStatsHint": "Share {{points}} points between your talents",
+    "pointsLeft": "{{count}} point left",
+    "pointsLeft_other": "{{count}} points left",
+    "stat_brave": "Brave",
+    "stat_smart": "Smart",
+    "stat_charm": "Charm",
+    "stat_sneaky": "Sneaky",
+    "ready": "I'm ready!",
+    "waitingOthers": "You're in! Waiting for the others…"
+  },
+  "join": {
+    "title": "Join the adventure",
+    "namePrompt": "What's your name?",
+    "namePlaceholder": "Your name",
+    "join": "Join",
+    "reconnecting": "Reconnecting to the adventure…",
+    "gameNotFound": "Hmm, we couldn't find that adventure. Ask the host to check!",
+    "gameFull": "The party is full — up to 7 adventurers can join."
+  },
+  "play": {
+    "yourTurnSoon": "The story continues…",
+    "dmThinking": "The Dungeon Master is thinking…",
+    "whatDoYouDo": "What do you do?",
+    "actionPlaceholder": "I want to…",
+    "send": "Send",
+    "waitingOn": "Waiting on {{name}}…",
+    "knockedOut": "{{name}} is knocked out and needs rescue!",
+    "rescued": "{{name}} is back on their feet!",
+    "itemAwarded": "{{name}} received {{item}}!",
+    "suggestion1": "Look around",
+    "suggestion2": "Talk to them",
+    "suggestion3": "Sneak closer"
+  },
+  "dice": {
+    "title": "Roll for {{stat}}!",
+    "reason": "{{reason}}",
+    "tapToRoll": "Tap the die (or shake your phone!)",
+    "rolling": "Rolling…",
+    "critSuccess": "AMAZING! Natural 20!",
+    "success": "Success!",
+    "fail": "Oh no, not quite…",
+    "fumble": "Oops! A wild fumble!",
+    "total": "{{raw}} + {{bonus}} = {{total}}"
+  },
+  "task": {
+    "title": "The Dungeon Master asks you…"
+  },
+  "table": {
+    "party": "The party",
+    "scene": "Scene",
+    "log": "Adventure log",
+    "pause": "Pause",
+    "resume": "Resume",
+    "nudge": "Nudge the story",
+    "endScene": "End scene",
+    "offline": "away",
+    "hostBadge": "Host"
+  },
+  "recap": {
+    "title": "The adventure ends…",
+    "playAgain": "Play again",
+    "highlights": "Tonight's highlights"
+  },
+  "errors": {
+    "dmConfused": "The Dungeon Master got a little confused. Let's try that again!",
+    "noKey": "Add your Claude API key in Settings to start an adventure.",
+    "rateLimited": "The Dungeon Master needs a short breather — trying again…",
+    "network": "Lost connection. Retrying…"
+  }
+}

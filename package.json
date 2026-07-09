@@ -1,0 +1,16 @@
+{
+  "name": "family-quest",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Family Quest — an AI Dungeon Master for families, set in worlds they already love",
+  "scripts": {
+    "build": "pnpm -r --filter '!@familyquest/host' build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "dev": "pnpm --filter @familyquest/devhost dev"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.33.0"
+}
