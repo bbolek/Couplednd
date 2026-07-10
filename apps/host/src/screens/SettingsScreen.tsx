@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import type { Language } from "@familyquest/shared";
-import { DM_MODELS, type DMModel } from "@familyquest/engine";
+import { DM_MODELS, type DMModel, type Language } from "@familyquest/shared";
 import { Body, Card, Chip, Muted, PrimaryButton, Title } from "../ui/components";
 import { useTheme } from "../ui/theme";
 import { useHostStore } from "../state/hostStore";
@@ -11,64 +10,89 @@ export function SettingsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const store = useHostStore();
+  const [draftServer, setDraftServer] = useState("");
   const [draftKey, setDraftKey] = useState("");
 
-  const maskedKey = store.apiKey ? `${store.apiKey.slice(0, 11)}…${store.apiKey.slice(-4)}` : "";
+  const inputStyle = {
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    borderRadius: 16,
+    padding: 14,
+    fontSize: 16,
+    color: theme.colors.text,
+    fontFamily: theme.fonts.bodySemibold,
+  } as const;
+
+  const maskedKey = store.hostKey ? "••••••••" : "";
+
+  const commitServer = () => {
+    if (draftServer.trim()) {
+      void store.setServerAddress(draftServer);
+      setDraftServer("");
+    }
+  };
+  const commitKey = () => {
+    if (draftKey.trim()) {
+      void store.setHostKey(draftKey);
+      setDraftKey("");
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 20, paddingTop: 64 }}>
       <Title>{t("settings.title")}</Title>
 
       <Card style={{ gap: 10 }}>
-        <Body style={{ fontFamily: theme.fonts.displayBold }}>{t("settings.apiKey")}</Body>
-        <Muted>{t("settings.apiKeyHint")}</Muted>
+        <Body style={{ fontFamily: theme.fonts.displayBold }}>{t("settings.server")}</Body>
+        <Muted>{t("settings.serverHint")}</Muted>
+        <TextInput
+          value={draftServer}
+          onChangeText={setDraftServer}
+          placeholder={store.serverAddress ?? t("settings.serverPlaceholder")}
+          placeholderTextColor={theme.colors.textSoft}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          style={inputStyle}
+          onSubmitEditing={commitServer}
+        />
+        <Muted>{t("settings.passcodeHint")}</Muted>
         <TextInput
           value={draftKey}
           onChangeText={setDraftKey}
-          placeholder={store.apiKey ? maskedKey : t("settings.apiKeyPlaceholder")}
+          placeholder={store.hostKey ? maskedKey : t("settings.passcodePlaceholder")}
           placeholderTextColor={theme.colors.textSoft}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry
-          style={{
-            borderWidth: 2,
-            borderColor: theme.colors.border,
-            borderRadius: 16,
-            padding: 14,
-            fontSize: 16,
-            color: theme.colors.text,
-            fontFamily: theme.fonts.bodySemibold,
-          }}
-          onSubmitEditing={() => {
-            if (draftKey.trim()) {
-              void store.setApiKey(draftKey);
-              setDraftKey("");
-            }
-          }}
+          style={inputStyle}
+          onSubmitEditing={commitKey}
         />
         <View style={{ flexDirection: "row", gap: 10 }}>
-          {draftKey.trim() ? (
+          {draftServer.trim() || draftKey.trim() ? (
             <PrimaryButton
               label={t("common.done")}
               onPress={() => {
-                void store.setApiKey(draftKey);
-                setDraftKey("");
+                commitServer();
+                commitKey();
               }}
               style={{ flex: 1 }}
             />
           ) : null}
           <PrimaryButton
-            label={t("settings.testKey")}
+            label={t("settings.testServer")}
             variant="secondary"
-            busy={store.keyStatus === "testing"}
-            disabled={!store.apiKey && !draftKey.trim()}
-            onPress={() => void store.testKey()}
+            busy={store.serverStatus === "testing"}
+            disabled={!store.serverAddress && !draftServer.trim()}
+            onPress={() => {
+              commitServer();
+              void store.testServer();
+            }}
             style={{ flex: 1 }}
           />
         </View>
-        {store.keyStatus === "ok" ? <Body>{t("settings.keyWorks")}</Body> : null}
-        {store.keyStatus === "bad" && store.apiKey ? <Muted>{t("settings.keyFailed")}</Muted> : null}
-        {store.keyStatus === "network" ? <Muted>{t("errors.network")}</Muted> : null}
+        {store.serverStatus === "ok" ? <Body>{t("settings.serverWorks")}</Body> : null}
+        {store.serverStatus === "unreachable" ? <Muted>{t("settings.serverFailed")}</Muted> : null}
       </Card>
 
       <Card style={{ gap: 10 }}>

@@ -3,8 +3,10 @@ import type {
   Audience,
   Character,
   CharacterConcept,
+  DMModel,
   Language,
   PlayerId,
+  UsageTotals,
   WorldBible,
 } from "@familyquest/shared";
 import { isValidAllocation } from "@familyquest/shared";
@@ -12,13 +14,10 @@ import { DMError, type AttributedAction, type DMActions, type DMEngine } from ".
 import { conceptsPrompt, dmCharter, rosterBlock, worldBibleBlock, worldGenPrompt } from "./prompts.js";
 import { CONCEPTS_SCHEMA, DM_TOOLS, WORLD_BIBLE_SCHEMA } from "./tools.js";
 
-export type DMModel = "claude-opus-4-8" | "claude-sonnet-5" | "claude-haiku-4-5";
-
-export const DM_MODELS: { id: DMModel; labelKey: string; pricing: string }[] = [
-  { id: "claude-opus-4-8", labelKey: "settings.modelBest", pricing: "$5 / $25 per MTok" },
-  { id: "claude-sonnet-5", labelKey: "settings.modelBalanced", pricing: "$3 / $15 per MTok" },
-  { id: "claude-haiku-4-5", labelKey: "settings.modelFast", pricing: "$1 / $5 per MTok" },
-];
+// The model catalog and usage shapes live in @familyquest/shared so the host
+// app can use them without depending on this package (and the Anthropic SDK).
+export { DM_MODELS } from "@familyquest/shared";
+export type { DMModel, UsageTotals } from "@familyquest/shared";
 
 export interface ClaudeDMConfig {
   apiKey: string;
@@ -34,13 +33,6 @@ export interface ClaudeDMConfig {
    */
   fetch?: typeof globalThis.fetch;
   onUsage?: (usage: UsageTotals) => void;
-}
-
-export interface UsageTotals {
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadTokens: number;
-  cacheWriteTokens: number;
 }
 
 const NARRATION_MAX_TOKENS = 2048;

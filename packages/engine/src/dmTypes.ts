@@ -1,5 +1,6 @@
 import type {
   CharacterConcept,
+  DMErrorKind,
   Item,
   Language,
   PlayerId,
@@ -71,8 +72,8 @@ export interface DMEngine {
 
 export type DMEngineFactory = (actions: DMActions) => DMEngine;
 
-/** Friendly errors the session surfaces to the host UI. */
-export type DMErrorKind = "refusal" | "rateLimited" | "badKey" | "network" | "unknown";
+// DMErrorKind lives in @familyquest/shared (the host protocol carries it).
+export type { DMErrorKind } from "@familyquest/shared";
 
 export class DMError extends Error {
   constructor(

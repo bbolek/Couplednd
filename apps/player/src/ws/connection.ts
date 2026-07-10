@@ -61,7 +61,10 @@ export class GameConnection {
     store.setStatus(this.attempts === 0 ? "connecting" : "reconnecting");
 
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    const ws = new WebSocket(`${proto}//${location.host}/ws`);
+    // The game id rides the query string so a multi-game server can route us.
+    const ws = new WebSocket(
+      `${proto}//${location.host}/ws?g=${encodeURIComponent(this.gameId)}`,
+    );
     this.ws = ws;
 
     ws.addEventListener("open", () => {
