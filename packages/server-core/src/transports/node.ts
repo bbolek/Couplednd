@@ -26,8 +26,11 @@ function wrap(socket: Socket): TransportSocket {
 export const nodeTransport: Transport = {
   listen(port, host, onConnection): Promise<TransportServer> {
     return new Promise((resolve, reject) => {
+      const live = new Set<Socket>();
       const server = createServer((socket) => {
         socket.setNoDelay(true);
+        live.add(socket);
+        socket.on("close", () => live.delete(socket));
         onConnection(wrap(socket));
       });
       server.once("error", reject);
@@ -35,7 +38,10 @@ export const nodeTransport: Transport = {
         resolve({
           close: () =>
             new Promise<void>((done) => {
+              // net.Server.close only stops listening; drop live
+              // connections too so shutdown is deterministic.
               server.close(() => done());
+              for (const socket of live) socket.destroy();
             }),
         });
       });

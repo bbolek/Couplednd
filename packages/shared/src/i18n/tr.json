@@ -19,12 +19,13 @@
   },
   "settings": {
     "title": "Ayarlar",
-    "apiKey": "Claude API anahtarı",
-    "apiKeyHint": "Sadece bu telefonda saklanır. console.anthropic.com adresinden alabilirsiniz",
-    "apiKeyPlaceholder": "sk-ant-…",
-    "testKey": "Anahtarı dene",
-    "keyWorks": "Anahtarınız çalışıyor! ✨",
-    "keyFailed": "Bu anahtar çalışmadı. Kontrol edip tekrar deneyin.",
+    "passcode": "Aile şifresi",
+    "passcodeHint": "Ailenizin oyun sunucusunun şifresi — yabancıların macera başlatmasını engeller.",
+    "passcodePlaceholder": "şifre",
+    "testServer": "Bağlantıyı dene",
+    "serverWorks": "Sunucuya bağlanıldı! ✨",
+    "serverFailed": "Oyun sunucusuna ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.",
+    "serverMissing": "Bu uygulama derlemesinde oyun sunucusu tanımlı değil.",
     "model": "Zindan Ustası'nın beyni",
     "modelBest": "En büyülü (önerilen)",
     "modelBalanced": "Dengeli",
@@ -58,7 +59,7 @@
     "waitingForCharacters": "Herkesin karakterini oluşturması bekleniyor…",
     "createMyCharacter": "Karakterimi oluştur",
     "startAdventure": "Macerayı başlat!",
-    "sameWifiHint": "Bağlanamıyor mu? Herkesin aynı WiFi ağında olduğundan emin olun."
+    "sameWifiHint": "Bağlanamıyor mu? Herkesin telefonunun internete bağlı olduğundan emin olun."
   },
   "character": {
     "title": "Kahramanını yarat",
@@ -134,7 +135,8 @@
   },
   "errors": {
     "dmConfused": "Zindan Ustası'nın kafası biraz karıştı. Hadi tekrar deneyelim!",
-    "noKey": "Maceraya başlamak için Ayarlar'a Claude API anahtarınızı ekleyin.",
+    "noServer": "Maceraya başlamak için Ayarlar'a aile şifresini girin.",
+    "serverLost": "Sunucu bağlantısı koptu. Yeniden bağlanılıyor…",
     "rateLimited": "Zindan Ustası kısa bir mola veriyor — tekrar deneniyor…",
     "network": "Bağlantı koptu. Yeniden deneniyor…"
   }

@@ -17,8 +17,8 @@ export interface ServerOptions {
   staticAssets?: Map<string, StaticAsset>;
   /** Dynamic routes; return undefined to fall through to 404. */
   onRequest?: (req: HttpRequest) => HttpResponse | undefined;
-  /** WebSocket endpoint path (default /ws). */
-  wsPath?: string;
+  /** WebSocket endpoint path(s) (default /ws). */
+  wsPath?: string | string[];
   onWebSocket: (ws: WsConnection, req: HttpRequest) => void;
 }
 
@@ -32,13 +32,15 @@ export interface RunningServer {
  * upgrades, in which case it becomes a long-lived WS connection.
  */
 export async function startServer(options: ServerOptions): Promise<RunningServer> {
-  const wsPath = options.wsPath ?? "/ws";
+  const wsPaths = new Set(
+    typeof options.wsPath === "string" ? [options.wsPath] : options.wsPath ?? ["/ws"],
+  );
   const host = options.host ?? "0.0.0.0";
 
   const transportServer: TransportServer = await options.transport.listen(
     options.port,
     host,
-    (socket) => handleConnection(socket, options, wsPath),
+    (socket) => handleConnection(socket, options, wsPaths),
   );
 
   return {
@@ -46,7 +48,7 @@ export async function startServer(options: ServerOptions): Promise<RunningServer
   };
 }
 
-function handleConnection(socket: TransportSocket, options: ServerOptions, wsPath: string): void {
+function handleConnection(socket: TransportSocket, options: ServerOptions, wsPaths: Set<string>): void {
   const parser = new HttpRequestParser();
   let ws: WsConnection | null = null;
 
@@ -76,7 +78,7 @@ function handleConnection(socket: TransportSocket, options: ServerOptions, wsPat
 
     const { request, remainder } = parsed;
 
-    if (request.path === wsPath) {
+    if (wsPaths.has(request.path)) {
       if (!isUpgradeRequest(request)) {
         socket.write(serializeResponse({ status: 426, body: "Upgrade Required" }));
         socket.end();

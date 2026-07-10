@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node --experimental-strip-types scripts/embed.ts",
+    "build": "vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo 'covered by devhost integration tests'"
   },

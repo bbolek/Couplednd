@@ -1,18 +1,18 @@
 import { create } from "zustand";
-import { fetch as expoFetch } from "expo/fetch";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import type { Audience, Avatar, GameState, Language, Stats } from "@familyquest/shared";
-import {
-  createClaudeDM,
-  DMError,
-  GameSession,
-  testApiKey,
-  type DMModel,
-  type UsageTotals,
-} from "@familyquest/engine";
-import type { RunningServer } from "@familyquest/server-core";
-import { loadSettings, saveApiKey, saveLanguage, saveModel } from "../storage/settings";
-import { startHostServer } from "../server/hostServer";
+import type {
+  Audience,
+  Avatar,
+  DMErrorKind,
+  DMModel,
+  GameState,
+  Language,
+  Stats,
+  UsageTotals,
+} from "@familyquest/shared";
+import { loadSettings, saveHostKey, saveLanguage, saveModel } from "../storage/settings";
+import { SERVER_ADDRESS } from "../config";
+import { RemoteGame } from "../server/remoteGame";
 import i18n from "../i18n";
 
 export type Screen =
@@ -30,23 +30,20 @@ export interface NarrationBeat {
   done: boolean;
 }
 
-/** A streaming-capable fetch for the Anthropic SDK — RN's built-in can't stream. */
-const streamingFetch = expoFetch as unknown as typeof globalThis.fetch;
-
 interface HostStore {
-  // Settings
+  // Settings (server address is baked into the build — see src/config.ts)
   settingsLoaded: boolean;
-  apiKey: string | null;
+  readonly serverAddress: string | null;
+  hostKey: string | null;
   model: DMModel;
   language: Language;
-  keyStatus: "unknown" | "testing" | "ok" | "bad" | "network";
+  serverStatus: "unknown" | "testing" | "ok" | "unreachable";
 
   // Navigation
   screen: Screen;
 
-  // Active game
-  session: GameSession | null;
-  server: RunningServer | null;
+  // Active game (lives on the server; this is the remote control)
+  game: RemoteGame | null;
   gameState: GameState | null;
   joinUrl: string | null;
   hostPlayerId: string | null;
@@ -57,10 +54,10 @@ interface HostStore {
 
   init(): Promise<void>;
   go(screen: Screen): void;
-  setApiKey(key: string): Promise<void>;
+  setHostKey(hostKey: string): Promise<void>;
   setModel(model: DMModel): Promise<void>;
   setLanguage(language: Language): Promise<void>;
-  testKey(): Promise<void>;
+  testServer(): Promise<void>;
   startNewGame(shows: string[], audience: Audience): Promise<void>;
   createHostCharacter(draft: {
     name: string;
@@ -75,16 +72,27 @@ interface HostStore {
 }
 
 const MAX_BEATS = 80;
+const HEALTH_TIMEOUT_MS = 5000;
+
+function dmErrorText(kind: DMErrorKind): string {
+  const key =
+    kind === "rateLimited"
+      ? "errors.rateLimited"
+      : kind === "network"
+        ? "errors.network"
+        : "errors.dmConfused";
+  return i18n.t(key);
+}
 
 export const useHostStore = create<HostStore>((set, get) => ({
   settingsLoaded: false,
-  apiKey: null,
+  serverAddress: SERVER_ADDRESS,
+  hostKey: null,
   model: "claude-opus-4-8",
   language: "en",
-  keyStatus: "unknown",
+  serverStatus: "unknown",
   screen: "home",
-  session: null,
-  server: null,
+  game: null,
   gameState: null,
   joinUrl: null,
   hostPlayerId: null,
@@ -97,19 +105,18 @@ export const useHostStore = create<HostStore>((set, get) => ({
     const settings = await loadSettings();
     await i18n.changeLanguage(settings.language);
     set({
-      apiKey: settings.apiKey,
+      hostKey: settings.hostKey,
       model: settings.model,
       language: settings.language,
       settingsLoaded: true,
-      keyStatus: settings.apiKey ? "unknown" : "bad",
     });
   },
 
   go: (screen) => set({ screen }),
 
-  async setApiKey(key) {
-    await saveApiKey(key.trim());
-    set({ apiKey: key.trim(), keyStatus: "unknown" });
+  async setHostKey(hostKey) {
+    await saveHostKey(hostKey);
+    set({ hostKey: hostKey.trim() });
   },
 
   async setModel(model) {
@@ -123,41 +130,45 @@ export const useHostStore = create<HostStore>((set, get) => ({
     set({ language });
   },
 
-  async testKey() {
-    const { apiKey, model } = get();
-    if (!apiKey) return;
-    set({ keyStatus: "testing" });
-    const result = await testApiKey(apiKey, model, streamingFetch);
-    set({ keyStatus: result.ok ? "ok" : result.reason === "badKey" ? "bad" : "network" });
+  async testServer() {
+    const { serverAddress } = get();
+    if (!serverAddress) return;
+    set({ serverStatus: "testing" });
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+      const res = await fetch(`http://${serverAddress}/health`, { signal: controller.signal });
+      clearTimeout(timer);
+      set({ serverStatus: res.ok ? "ok" : "unreachable" });
+    } catch {
+      set({ serverStatus: "unreachable" });
+    }
   },
 
   async startNewGame(shows, audience) {
-    const { apiKey, model, language } = get();
-    if (!apiKey) {
-      set({ dmError: i18n.t("errors.noKey") });
+    const { serverAddress, hostKey, model, language } = get();
+    if (!serverAddress || !hostKey) {
+      set({ dmError: i18n.t("errors.noServer") });
       return;
     }
     set({ building: true, dmError: null, beats: [], usage: null });
 
-    const gameId = Math.random().toString(36).slice(2, 8);
+    const resetToNewGame = (message: string): void => {
+      get().game?.close();
+      set({ building: false, game: null, joinUrl: null, gameState: null, dmError: message });
+    };
 
-    const session: GameSession = new GameSession({
-      gameId,
-      language,
-      shows,
-      audience,
-      onError: (err) => {
-        const key =
-          err instanceof DMError
-            ? err.kind === "rateLimited"
-              ? "errors.rateLimited"
-              : err.kind === "badKey"
-                ? "errors.noKey"
-                : err.kind === "network"
-                  ? "errors.network"
-                  : "errors.dmConfused"
-            : "errors.dmConfused";
-        set({ dmError: i18n.t(key) });
+    const game = new RemoteGame(serverAddress, hostKey, {
+      onCreated: ({ joinUrl }) => {
+        set({ joinUrl });
+        void activateKeepAwakeAsync("familyquest-game");
+      },
+      onState: (gameState) => {
+        set({ gameState });
+        // World + concepts ready = lobby time (parity with the old local flow).
+        if (get().building && gameState.setup.concepts.length > 0) {
+          set({ building: false, screen: "lobby" });
+        }
       },
       onNarration: (messageId, text, done) => {
         set((state) => {
@@ -174,74 +185,51 @@ export const useHostStore = create<HostStore>((set, get) => ({
           return { beats };
         });
       },
-      createDM: createClaudeDM({
-        apiKey,
-        model,
-        language,
-        audience,
-        fetch: streamingFetch,
-        getParty: () =>
-          Object.entries(session.getState().characters).map(([playerId, character]) => ({
-            playerId,
-            playerName: session.getState().players[playerId]?.name ?? "?",
-            character,
-          })),
-        onUsage: (usage) => set({ usage }),
-      }),
+      onUsage: (usage) => set({ usage }),
+      onDmError: (kind) => {
+        if (get().building) resetToNewGame(dmErrorText(kind));
+        else set({ dmError: dmErrorText(kind) });
+      },
+      onHostPlayer: (hostPlayerId) => set({ hostPlayerId, screen: "lobby" }),
+      onServerError: (code) => {
+        const message =
+          code === "BAD_HOST_KEY" || code === "SERVER_FULL" || code === "GAME_NOT_FOUND"
+            ? i18n.t("settings.serverFailed")
+            : i18n.t("errors.dmConfused");
+        resetToNewGame(message);
+      },
+      onConnectionLost: () => set({ dmError: i18n.t("errors.serverLost") }),
+      onConnectionRestored: () => set({ dmError: null }),
+      onFailed: () => resetToNewGame(i18n.t("errors.network")),
     });
 
-    session.subscribe((gameState) => set({ gameState }));
-
-    try {
-      const { server, joinUrl } = await startHostServer(session);
-      await activateKeepAwakeAsync("familyquest-game");
-      set({ session, server, joinUrl, gameState: session.getState() });
-      await session.prepareWorld();
-      set({ building: false, screen: "lobby" });
-    } catch (err) {
-      session.close();
-      set({
-        building: false,
-        session: null,
-        server: null,
-        dmError: err instanceof DMError ? i18n.t("errors.dmConfused") : String(err),
-      });
-    }
+    set({ game });
+    game.start({ shows, audience, language, model });
   },
 
   createHostCharacter(draft) {
-    const { session, language } = get();
-    if (!session) return;
-    let hostPlayerId = get().hostPlayerId;
-    if (!hostPlayerId) {
-      hostPlayerId = session.addHostPlayer(language === "tr" ? "Ev sahibi" : "Host");
-      set({ hostPlayerId });
-    }
-    session.createCharacterFor(hostPlayerId, draft);
-    set({ screen: "lobby" });
+    // hostPlayerId + screen change arrive via the host:player message.
+    get().game?.createCharacter(draft);
   },
 
   async startAdventure() {
-    const { session } = get();
-    if (!session) return;
+    const { game } = get();
+    if (!game) return;
     set({ screen: "table" });
-    await session.startAdventure();
+    game.startAdventure();
   },
 
   async nudge() {
-    await get().session?.nudge("Please move the story along to something new and engaging.");
+    get().game?.nudge();
   },
 
   clearDmError: () => set({ dmError: null }),
 
   async endGame() {
-    const { session, server } = get();
-    session?.close();
-    await server?.close().catch(() => undefined);
+    get().game?.end();
     deactivateKeepAwake("familyquest-game");
     set({
-      session: null,
-      server: null,
+      game: null,
       gameState: null,
       joinUrl: null,
       hostPlayerId: null,

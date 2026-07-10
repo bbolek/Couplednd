@@ -19,12 +19,13 @@
   },
   "settings": {
     "title": "Settings",
-    "apiKey": "Claude API key",
-    "apiKeyHint": "Stored only on this phone. Get one at console.anthropic.com",
-    "apiKeyPlaceholder": "sk-ant-…",
-    "testKey": "Test key",
-    "keyWorks": "Your key works! ✨",
-    "keyFailed": "That key didn't work. Double-check and try again.",
+    "passcode": "Family passcode",
+    "passcodeHint": "The passcode for your family's game server — it keeps strangers from starting adventures.",
+    "passcodePlaceholder": "passcode",
+    "testServer": "Test connection",
+    "serverWorks": "Connected to the server! ✨",
+    "serverFailed": "Couldn't reach the game server. Check your internet connection and try again.",
+    "serverMissing": "This app build has no game server configured.",
     "model": "Dungeon Master brain",
     "modelBest": "Most magical (recommended)",
     "modelBalanced": "Great value",
@@ -58,7 +59,7 @@
     "waitingForCharacters": "Waiting for everyone to create a character…",
     "createMyCharacter": "Create my character",
     "startAdventure": "Start the adventure!",
-    "sameWifiHint": "Not connecting? Make sure everyone is on the same WiFi."
+    "sameWifiHint": "Not connecting? Make sure everyone's phone is online."
   },
   "character": {
     "title": "Create your hero",
@@ -134,7 +135,8 @@
   },
   "errors": {
     "dmConfused": "The Dungeon Master got a little confused. Let's try that again!",
-    "noKey": "Add your Claude API key in Settings to start an adventure.",
+    "noServer": "Enter your family passcode in Settings to start an adventure.",
+    "serverLost": "Lost the server connection. Reconnecting…",
     "rateLimited": "The Dungeon Master needs a short breather — trying again…",
     "network": "Lost connection. Retrying…"
   }
