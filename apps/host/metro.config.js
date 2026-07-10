@@ -14,4 +14,20 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, "node_modules"),
 ];
 
+// Workspace packages use NodeNext-style relative imports ("./rules.js" for
+// rules.ts). Metro doesn't map .js specifiers back to .ts sources, so retry
+// without the extension when the literal path doesn't resolve.
+const defaultResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const resolve = defaultResolveRequest ?? context.resolveRequest;
+  try {
+    return resolve(context, moduleName, platform);
+  } catch (error) {
+    if (moduleName.startsWith(".") && moduleName.endsWith(".js")) {
+      return resolve(context, moduleName.slice(0, -3), platform);
+    }
+    throw error;
+  }
+};
+
 module.exports = config;
