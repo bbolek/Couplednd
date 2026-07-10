@@ -105,11 +105,22 @@ export function worldGenPrompt(shows: string[], language: Language, audience: Au
 Blend their settings, humor, and iconic elements into ONE coherent world that fans of each will recognize and smile at. Do not copy plots — invent something new that feels at home in all of them. ${WORLD_AUDIENCE[audience]} Keep every description to one or two sentences. ${inLanguage}`;
 }
 
-export function conceptsPrompt(world: WorldBible, count: number, language: Language): string {
+export function conceptsPrompt(
+  world: WorldBible,
+  count: number,
+  language: Language,
+  shows: string[],
+): string {
   const inLanguage = language === "tr" ? "Write names and taglines in Turkish." : "Write names and taglines in English.";
-  return `Invent ${count} adorable playable hero concepts for this world:
+  const fromShows =
+    shows.length > 0
+      ? `Most of them must be the beloved, instantly recognizable characters from ${shows.join(", ")} themselves — the ones fans would squeal to play — adapted to fit this mashup world. You may add one or two brand-new companions that feel native to these shows for variety.`
+      : "Invent adorable original heroes that fit the world.";
+  return `Create ${count} playable hero concepts for this world:
 
 ${world.title}: ${world.setting}
 
-Each concept needs a short cute name, a species/archetype that fits the world, a one-line playful tagline, a single fitting emoji, and suggested stats (brave/smart/charm/sneaky, each 0-4, summing to exactly 8). Make them varied: at least one brave-leaning, one smart-leaning, one charm-leaning, one sneaky-leaning. ${inLanguage}`;
+${fromShows}
+
+Each concept needs a short name, a species/archetype (for show characters, who they are in their show), a one-line playful tagline, a single fitting emoji, and suggested stats (brave/smart/charm/sneaky, each 0-4, summing to exactly 8) that match their personality. Make the stat spreads varied: at least one brave-leaning, one smart-leaning, one charm-leaning, one sneaky-leaning. ${inLanguage}`;
 }

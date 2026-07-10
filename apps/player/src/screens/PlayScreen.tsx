@@ -3,6 +3,42 @@ import { t } from "../i18n.js";
 import { usePlayerStore } from "../state/playerStore.js";
 import { CharacterStrip } from "../components/bits.js";
 
+const TYPE_TICK_MS = 33;
+
+/** Smooth the API's bursty stream chunks into a steady typewriter reveal. */
+function useTypewriter(text: string, done: boolean): string {
+  const [shown, setShown] = useState(() => (done ? text.length : 0));
+  const targetRef = useRef(text.length);
+  targetRef.current = text.length;
+  const settled = done && shown >= text.length;
+
+  useEffect(() => {
+    if (settled) return;
+    const id = setInterval(() => {
+      setShown((s) => {
+        const target = targetRef.current;
+        if (s >= target) return s;
+        const backlog = target - s;
+        return Math.min(target, s + Math.max(1, Math.ceil(backlog / 24)));
+      });
+    }, TYPE_TICK_MS);
+    return () => clearInterval(id);
+  }, [settled]);
+
+  return text.slice(0, shown);
+}
+
+function NarrationBeat({ text, done }: { text: string; done: boolean }) {
+  const shown = useTypewriter(text, done);
+  const streaming = !done || shown.length < text.length;
+  return (
+    <div className="beat">
+      {shown}
+      {streaming ? <span className="cursor" /> : null}
+    </div>
+  );
+}
+
 export function PlayScreen({ onAction }: { onAction: (freeText: string) => void }) {
   const game = usePlayerStore((s) => s.game);
   const beats = usePlayerStore((s) => s.beats);
@@ -40,12 +76,7 @@ export function PlayScreen({ onAction }: { onAction: (freeText: string) => void 
             🔮 {t("play.yourTurnSoon")}
           </p>
         ) : (
-          beats.map((b) => (
-            <div className="beat" key={b.messageId}>
-              {b.text}
-              {!b.done ? <span className="cursor" /> : null}
-            </div>
-          ))
+          beats.map((b) => <NarrationBeat key={b.messageId} text={b.text} done={b.done} />)
         )}
       </div>
 

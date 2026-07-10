@@ -72,6 +72,8 @@ export function createClaudeDM(config: ClaudeDMConfig) {
 class ClaudeDM implements DMEngine {
   private client: Anthropic;
   private world: WorldBible | null = null;
+  /** The shows this game mashes up — captured at world gen for concept gen. */
+  private shows: string[] = [];
   private messages: Anthropic.MessageParam[] = [];
   /** Index into `messages` where the current scene began (for compaction). */
   private sceneStartIndex = 0;
@@ -101,6 +103,7 @@ class ClaudeDM implements DMEngine {
   // -------------------------------------------------------------------------
 
   async generateWorld(shows: string[], language: Language): Promise<WorldBible> {
+    this.shows = shows;
     const response = await this.request(() =>
       this.client.messages.create({
         model: this.config.model,
@@ -136,7 +139,7 @@ class ClaudeDM implements DMEngine {
           ...buildModelParams(this.config.model).output_config,
           format: { type: "json_schema", schema: CONCEPTS_SCHEMA },
         },
-        messages: [{ role: "user", content: conceptsPrompt(world, count, language) }],
+        messages: [{ role: "user", content: conceptsPrompt(world, count, language, this.shows) }],
       }),
     );
     this.recordUsage(response.usage);

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { AvatarBadge, Body, Card, HeartsRow, Muted, PrimaryButton, Title } from "../ui/components";
@@ -9,6 +9,46 @@ import { useHostStore } from "../state/hostStore";
  * The shared "table" — designed to sit in the middle of the family and be
  * readable from across a coffee table: big narration, glanceable party strip.
  */
+const TYPE_TICK_MS = 33;
+
+/**
+ * Smooth out the API's bursty stream chunks into a steady typewriter reveal.
+ * Catch-up is adaptive: the further behind, the faster it reveals, so it
+ * never lags a fast stream but still flows character by character.
+ */
+function useTypewriter(text: string, done: boolean): string {
+  const [shown, setShown] = useState(() => (done ? text.length : 0));
+  const targetRef = useRef(text.length);
+  targetRef.current = text.length;
+  const settled = done && shown >= text.length;
+
+  useEffect(() => {
+    if (settled) return;
+    const id = setInterval(() => {
+      setShown((s) => {
+        const target = targetRef.current;
+        if (s >= target) return s;
+        const backlog = target - s;
+        return Math.min(target, s + Math.max(1, Math.ceil(backlog / 24)));
+      });
+    }, TYPE_TICK_MS);
+    return () => clearInterval(id);
+  }, [settled]);
+
+  return text.slice(0, shown);
+}
+
+function NarrationBeatText({ text, done, style }: { text: string; done: boolean; style: object }) {
+  const shown = useTypewriter(text, done);
+  const streaming = !done || shown.length < text.length;
+  return (
+    <Text style={style}>
+      {shown}
+      {streaming ? " ▍" : ""}
+    </Text>
+  );
+}
+
 export function GameTableScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -63,20 +103,24 @@ export function GameTableScreen() {
       </ScrollView>
 
       {/* Narration feed */}
-      <ScrollView ref={feedRef} style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 12 }}>
+      <ScrollView
+        ref={feedRef}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 20, gap: 12 }}
+        onContentSizeChange={() => feedRef.current?.scrollToEnd({ animated: true })}
+      >
         {store.beats.map((beat) => (
           <Card key={beat.messageId} style={{ borderTopLeftRadius: 6 }}>
-            <Text
+            <NarrationBeatText
+              text={beat.text}
+              done={beat.done}
               style={{
                 fontFamily: theme.fonts.body,
                 fontSize: 19,
                 lineHeight: 30,
                 color: theme.colors.text,
               }}
-            >
-              {beat.text}
-              {!beat.done ? " ▍" : ""}
-            </Text>
+            />
           </Card>
         ))}
         {store.beats.length === 0 ? (
