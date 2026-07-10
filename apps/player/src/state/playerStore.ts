@@ -29,6 +29,8 @@ interface PlayerStore {
   lastRoll: RollResult | null;
   /** Task currently addressed to me. */
   myTask: Task | null;
+  /** The DM hit an error; shown as a banner until narration resumes. */
+  dmError: boolean;
 
   setStatus(status: ConnectionStatus): void;
   setJoined(playerId: string): void;
@@ -49,6 +51,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   myDiceRequest: null,
   lastRoll: null,
   myTask: null,
+  dmError: false,
 
   setStatus: (status) => set({ status }),
   setJoined: (playerId) => set({ playerId, error: null }),
@@ -69,7 +72,11 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     const patch: Partial<PlayerStore> = { game: next };
 
     switch (event.kind) {
+      case "dm-error":
+        patch.dmError = true;
+        break;
       case "narration-chunk": {
+        patch.dmError = false;
         const beats = [...get().beats];
         const existing = beats.find((b) => b.messageId === event.messageId);
         if (existing) {

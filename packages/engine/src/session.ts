@@ -23,7 +23,7 @@ import {
   type StatName,
 } from "@familyquest/shared";
 import { generateToken, Hub, type HubClient, type WsConnection } from "@familyquest/server-core";
-import type { AttributedAction, DMActions, DMEngine, DMEngineFactory } from "./dmTypes.js";
+import { DMError, type AttributedAction, type DMActions, type DMEngine, type DMEngineFactory } from "./dmTypes.js";
 
 interface PlayerRecord {
   playerId: PlayerId;
@@ -119,6 +119,8 @@ export class GameSession implements DMActions {
   }
 
   async startAdventure(): Promise<void> {
+    // Idempotent: the host app may resend `host:start` after a reconnect.
+    if (this.state.phase !== "lobby" && this.state.phase !== "characterCreation") return;
     this.applyAndBroadcast({ kind: "phase-changed", phase: "playing" });
     await this.runDM(() => this.dm.startAdventure());
   }
@@ -145,6 +147,11 @@ export class GameSession implements DMActions {
       await fn();
     } catch (err) {
       this.options.onError?.(err);
+      // Players otherwise have no signal at all when a DM turn dies.
+      this.broadcast({
+        kind: "dm-error",
+        errorKind: err instanceof DMError ? err.kind : "unknown",
+      });
     }
   }
 

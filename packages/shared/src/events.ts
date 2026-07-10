@@ -12,6 +12,7 @@ import type {
   Task,
 } from "./gameState.js";
 import type { RollResult } from "./rules.js";
+import type { DMErrorKind } from "./dmModels.js";
 
 /**
  * Delta events broadcast from the host to every connected client.
@@ -33,4 +34,5 @@ export type GameEvent =
   | { kind: "item-awarded"; playerId: PlayerId; item: Item }
   | { kind: "hp-changed"; playerId: PlayerId; hp: number; delta: number; reason?: string }
   | { kind: "character-status"; playerId: PlayerId; status: CharacterStatus }
-  | { kind: "game-ended"; epilogue: string };
+  | { kind: "game-ended"; epilogue: string }
+  | { kind: "dm-error"; errorKind: DMErrorKind };

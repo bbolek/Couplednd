@@ -101,7 +101,8 @@
     "itemAwarded": "{{name}} şunu kazandı: {{item}}!",
     "suggestion1": "Etrafa bak",
     "suggestion2": "Onlarla konuş",
-    "suggestion3": "Sessizce yaklaş"
+    "suggestion3": "Sessizce yaklaş",
+    "dmError": "Anlatıcı bir anlığına ipin ucunu kaçırdı — ev sahibi ✨ ile tekrar deneyebilir."
   },
   "dice": {
     "title": "{{stat}} zarı at!",

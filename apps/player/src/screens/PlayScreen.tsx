@@ -7,6 +7,7 @@ export function PlayScreen({ onAction }: { onAction: (freeText: string) => void 
   const game = usePlayerStore((s) => s.game);
   const beats = usePlayerStore((s) => s.beats);
   const playerId = usePlayerStore((s) => s.playerId);
+  const dmError = usePlayerStore((s) => s.dmError);
   const [text, setText] = useState("");
   const feedRef = useRef<HTMLDivElement>(null);
 
@@ -47,6 +48,12 @@ export function PlayScreen({ onAction }: { onAction: (freeText: string) => void 
           ))
         )}
       </div>
+
+      {dmError ? (
+        <p className="muted center" style={{ margin: 0, fontFamily: "var(--font-display)" }}>
+          🌩️ {t("play.dmError")}
+        </p>
+      ) : null}
 
       {waitingName && waitingOn?.playerId !== playerId ? (
         <p className="muted center" style={{ margin: 0, fontFamily: "var(--font-display)" }}>

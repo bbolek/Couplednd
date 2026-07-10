@@ -30,6 +30,8 @@ export interface GameRecord {
   session: GameSession;
   hostPlayerId: PlayerId | null;
   hostSink: HostSink | null;
+  /** Last DM error, kept so a re-attaching host still sees it. */
+  lastDmError: DMErrorKind | null;
   lastActivityAt: number;
 }
 
@@ -87,6 +89,7 @@ export class GameManager {
       session: null as unknown as GameSession, // assigned below, before any use
       hostPlayerId: null,
       hostSink: null,
+      lastDmError: null,
       lastActivityAt: Date.now(),
     };
 
@@ -97,9 +100,15 @@ export class GameManager {
       audience: input.audience,
       onError: (err) => {
         const kind: DMErrorKind = err instanceof DMError ? err.kind : "unknown";
+        console.error(`[dm] game ${gameId} DM error (${kind}):`, err);
+        record.lastDmError = kind;
         record.hostSink?.onDmError(kind);
       },
       onNarration: (messageId, text, done) => {
+        if (done) {
+          record.lastDmError = null; // the DM recovered — stale error is noise
+          console.log(`[dm] game ${gameId} narration ${messageId} complete`);
+        }
         record.hostSink?.onNarration(messageId, text, done);
       },
       createDM: this.options.mockDM

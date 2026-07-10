@@ -38,6 +38,10 @@ export interface ClaudeDMConfig {
 const NARRATION_MAX_TOKENS = 2048;
 const SETUP_MAX_TOKENS = 4096;
 const MAX_LOOP_ITERATIONS = 12;
+/** Per-attempt HTTP timeout. The SDK default (10 min) turns a stalled stream
+ * into silent dead air at the table — fail fast and retry instead. */
+const REQUEST_TIMEOUT_MS = 90_000;
+const RETRY_DELAY_MS = 4_000;
 
 /**
  * Per-model request params. Sampling params (temperature/top_p/top_k) are
@@ -86,6 +90,8 @@ class ClaudeDM implements DMEngine {
   ) {
     this.client = new Anthropic({
       apiKey: config.apiKey,
+      timeout: REQUEST_TIMEOUT_MS,
+      maxRetries: 2,
       ...(config.fetch ? { fetch: config.fetch } : {}),
     });
   }
@@ -180,29 +186,46 @@ class ClaudeDM implements DMEngine {
    */
   private async turnLoop(): Promise<void> {
     for (let i = 0; i < MAX_LOOP_ITERATIONS && !this.cancelled; i++) {
-      const stream = this.client.messages.stream({
-        model: this.config.model,
-        max_tokens: NARRATION_MAX_TOKENS,
-        ...buildModelParams(this.config.model),
-        system: this.buildSystem(),
-        tools: DM_TOOLS,
-        messages: this.withCacheMarker(this.messages),
-      });
-
       const messageId = `dm_m${++this.messageNum}`;
       let sawText = false;
-      stream.on("text", (delta) => {
-        if (this.cancelled) return;
-        sawText = true;
-        this.actions.narrationChunk(messageId, delta);
-      });
+
+      const attempt = async (): Promise<Anthropic.Message> => {
+        const stream = this.client.messages.stream({
+          model: this.config.model,
+          max_tokens: NARRATION_MAX_TOKENS,
+          ...buildModelParams(this.config.model),
+          system: this.buildSystem(),
+          tools: DM_TOOLS,
+          messages: this.withCacheMarker(this.messages),
+        });
+        stream.on("text", (delta) => {
+          if (this.cancelled) return;
+          sawText = true;
+          this.actions.narrationChunk(messageId, delta);
+        });
+        try {
+          return await stream.finalMessage();
+        } catch (err) {
+          throw this.classify(err);
+        }
+      };
 
       let message: Anthropic.Message;
       try {
-        message = await stream.finalMessage();
+        try {
+          message = await attempt();
+        } catch (err) {
+          // Retry once — but never after text already reached the players
+          // (a rerun would stream duplicate narration).
+          const kind = err instanceof DMError ? err.kind : "unknown";
+          if (sawText || this.cancelled || kind === "badKey" || kind === "refusal") throw err;
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+          if (this.cancelled) return;
+          message = await attempt();
+        }
       } catch (err) {
         if (sawText) this.actions.narrationDone(messageId);
-        throw this.classify(err);
+        throw err;
       }
       if (sawText) this.actions.narrationDone(messageId);
       this.recordUsage(message.usage);

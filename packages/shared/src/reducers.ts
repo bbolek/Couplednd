@@ -131,5 +131,9 @@ export function applyEvent(state: GameState, event: GameEvent): GameState {
 
     case "game-ended":
       return { ...state, phase: "ended" };
+
+    case "dm-error":
+      // Transient signal for the UIs; the game state itself is unchanged.
+      return state;
   }
 }

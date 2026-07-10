@@ -101,7 +101,8 @@
     "itemAwarded": "{{name}} received {{item}}!",
     "suggestion1": "Look around",
     "suggestion2": "Talk to them",
-    "suggestion3": "Sneak closer"
+    "suggestion3": "Sneak closer",
+    "dmError": "The storyteller lost the plot for a second — the host can tap ✨ to retry."
   },
   "dice": {
     "title": "Roll for {{stat}}!",

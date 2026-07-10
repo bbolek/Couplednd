@@ -51,6 +51,9 @@ export function attachHostChannel(ws: WsConnection, req: HttpRequest, deps: Host
       onUsage: (totals) => send({ type: "usage", totals }),
       onDmError: (kind) => send({ type: "dmError", kind }),
     };
+    // A DM error that fired while no host was attached would otherwise be
+    // lost forever — replay it so the host app can offer a retry.
+    if (target.lastDmError) send({ type: "dmError", kind: target.lastDmError });
   };
 
   ws.onClose(() => {
@@ -168,6 +171,7 @@ export function attachHostChannel(ws: WsConnection, req: HttpRequest, deps: Host
           fail("NO_GAME", "Create or reattach to a game first.");
           return;
         }
+        console.log(`[host] game ${record.gameId} start requested`);
         void record.session.startAdventure();
         return;
       }
@@ -177,6 +181,7 @@ export function attachHostChannel(ws: WsConnection, req: HttpRequest, deps: Host
           fail("NO_GAME", "Create or reattach to a game first.");
           return;
         }
+        console.log(`[host] game ${record.gameId} nudge requested`);
         void record.session.nudge(
           msg.instruction ?? "Please move the story along to something new and engaging.",
         );

@@ -63,6 +63,8 @@ export class RemoteGame {
   private hostToken: string | null = null;
   private pendingCreate: NewGameParams | null = null;
   private pinger: ReturnType<typeof setInterval> | null = null;
+  /** Messages sent while the socket was down — flushed after (re)attach. */
+  private outbox: HostClientMessage[] = [];
 
   constructor(
     private readonly serverAddress: string,
@@ -158,9 +160,11 @@ export class RemoteGame {
         this.gameId = msg.gameId;
         this.hostToken = msg.hostToken;
         this.callbacks.onCreated({ gameId: msg.gameId, joinUrl: msg.joinUrl });
+        this.flushOutbox();
         break;
       case "host:reattached":
         this.callbacks.onConnectionRestored();
+        this.flushOutbox();
         break;
       case "host:player":
         this.callbacks.onHostPlayer(msg.playerId);
@@ -191,7 +195,21 @@ export class RemoteGame {
   private send(message: HostClientMessage): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
+      return;
     }
+    // Never silently drop a game action while reconnecting (a lost
+    // `host:start` used to leave the whole table in dead air). Pings and the
+    // handshake messages are connection-scoped and must not be replayed.
+    if (message.type === "host:start" || message.type === "host:nudge" || message.type === "host:character" || message.type === "host:end") {
+      this.outbox.push(message);
+    }
+  }
+
+  /** Replay actions that were attempted while the socket was down. */
+  private flushOutbox(): void {
+    const queued = this.outbox;
+    this.outbox = [];
+    for (const message of queued) this.send(message);
   }
 
   private startPing(): void {
