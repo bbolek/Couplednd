@@ -7,5 +7,5 @@
     "moduleResolution": "Bundler",
     "types": ["react", "react-native"]
   },
-  "include": ["index.ts", "src", "assets"]
+  "include": ["index.ts", "src"]
 }

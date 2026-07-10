@@ -10,14 +10,8 @@ import type {
   Stats,
   UsageTotals,
 } from "@familyquest/shared";
-import {
-  loadSettings,
-  normalizeServerAddress,
-  saveHostKey,
-  saveLanguage,
-  saveModel,
-  saveServerAddress,
-} from "../storage/settings";
+import { loadSettings, saveHostKey, saveLanguage, saveModel } from "../storage/settings";
+import { SERVER_ADDRESS } from "../config";
 import { RemoteGame } from "../server/remoteGame";
 import i18n from "../i18n";
 
@@ -37,9 +31,9 @@ export interface NarrationBeat {
 }
 
 interface HostStore {
-  // Settings
+  // Settings (server address is baked into the build — see src/config.ts)
   settingsLoaded: boolean;
-  serverAddress: string | null;
+  readonly serverAddress: string | null;
   hostKey: string | null;
   model: DMModel;
   language: Language;
@@ -60,7 +54,6 @@ interface HostStore {
 
   init(): Promise<void>;
   go(screen: Screen): void;
-  setServerAddress(address: string): Promise<void>;
   setHostKey(hostKey: string): Promise<void>;
   setModel(model: DMModel): Promise<void>;
   setLanguage(language: Language): Promise<void>;
@@ -93,7 +86,7 @@ function dmErrorText(kind: DMErrorKind): string {
 
 export const useHostStore = create<HostStore>((set, get) => ({
   settingsLoaded: false,
-  serverAddress: null,
+  serverAddress: SERVER_ADDRESS,
   hostKey: null,
   model: "claude-opus-4-8",
   language: "en",
@@ -112,7 +105,6 @@ export const useHostStore = create<HostStore>((set, get) => ({
     const settings = await loadSettings();
     await i18n.changeLanguage(settings.language);
     set({
-      serverAddress: settings.serverAddress,
       hostKey: settings.hostKey,
       model: settings.model,
       language: settings.language,
@@ -121,12 +113,6 @@ export const useHostStore = create<HostStore>((set, get) => ({
   },
 
   go: (screen) => set({ screen }),
-
-  async setServerAddress(address) {
-    const normalized = normalizeServerAddress(address);
-    await saveServerAddress(normalized);
-    set({ serverAddress: normalized, serverStatus: "unknown" });
-  },
 
   async setHostKey(hostKey) {
     await saveHostKey(hostKey);

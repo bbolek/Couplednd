@@ -19,15 +19,13 @@
   },
   "settings": {
     "title": "Settings",
-    "server": "Game server",
-    "serverHint": "The address of your family's game server (an IP like 203.0.113.7, or host:port)",
-    "serverPlaceholder": "e.g. 203.0.113.7",
-    "passcode": "Server passcode",
-    "passcodeHint": "The passcode set on the server — it keeps strangers from starting adventures.",
+    "passcode": "Family passcode",
+    "passcodeHint": "The passcode for your family's game server — it keeps strangers from starting adventures.",
     "passcodePlaceholder": "passcode",
     "testServer": "Test connection",
     "serverWorks": "Connected to the server! ✨",
-    "serverFailed": "Couldn't reach the server. Check the address and try again.",
+    "serverFailed": "Couldn't reach the game server. Check your internet connection and try again.",
+    "serverMissing": "This app build has no game server configured.",
     "model": "Dungeon Master brain",
     "modelBest": "Most magical (recommended)",
     "modelBalanced": "Great value",
@@ -137,7 +135,7 @@
   },
   "errors": {
     "dmConfused": "The Dungeon Master got a little confused. Let's try that again!",
-    "noServer": "Add your game server address in Settings to start an adventure.",
+    "noServer": "Enter your family passcode in Settings to start an adventure.",
     "serverLost": "Lost the server connection. Reconnecting…",
     "rateLimited": "The Dungeon Master needs a short breather — trying again…",
     "network": "Lost connection. Retrying…"

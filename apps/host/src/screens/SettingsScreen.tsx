@@ -10,7 +10,6 @@ export function SettingsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const store = useHostStore();
-  const [draftServer, setDraftServer] = useState("");
   const [draftKey, setDraftKey] = useState("");
 
   const inputStyle = {
@@ -25,12 +24,6 @@ export function SettingsScreen() {
 
   const maskedKey = store.hostKey ? "••••••••" : "";
 
-  const commitServer = () => {
-    if (draftServer.trim()) {
-      void store.setServerAddress(draftServer);
-      setDraftServer("");
-    }
-  };
   const commitKey = () => {
     if (draftKey.trim()) {
       void store.setHostKey(draftKey);
@@ -43,19 +36,7 @@ export function SettingsScreen() {
       <Title>{t("settings.title")}</Title>
 
       <Card style={{ gap: 10 }}>
-        <Body style={{ fontFamily: theme.fonts.displayBold }}>{t("settings.server")}</Body>
-        <Muted>{t("settings.serverHint")}</Muted>
-        <TextInput
-          value={draftServer}
-          onChangeText={setDraftServer}
-          placeholder={store.serverAddress ?? t("settings.serverPlaceholder")}
-          placeholderTextColor={theme.colors.textSoft}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          style={inputStyle}
-          onSubmitEditing={commitServer}
-        />
+        <Body style={{ fontFamily: theme.fonts.displayBold }}>{t("settings.passcode")}</Body>
         <Muted>{t("settings.passcodeHint")}</Muted>
         <TextInput
           value={draftKey}
@@ -69,30 +50,21 @@ export function SettingsScreen() {
           onSubmitEditing={commitKey}
         />
         <View style={{ flexDirection: "row", gap: 10 }}>
-          {draftServer.trim() || draftKey.trim() ? (
-            <PrimaryButton
-              label={t("common.done")}
-              onPress={() => {
-                commitServer();
-                commitKey();
-              }}
-              style={{ flex: 1 }}
-            />
+          {draftKey.trim() ? (
+            <PrimaryButton label={t("common.done")} onPress={commitKey} style={{ flex: 1 }} />
           ) : null}
           <PrimaryButton
             label={t("settings.testServer")}
             variant="secondary"
             busy={store.serverStatus === "testing"}
-            disabled={!store.serverAddress && !draftServer.trim()}
-            onPress={() => {
-              commitServer();
-              void store.testServer();
-            }}
+            disabled={!store.serverAddress}
+            onPress={() => void store.testServer()}
             style={{ flex: 1 }}
           />
         </View>
         {store.serverStatus === "ok" ? <Body>{t("settings.serverWorks")}</Body> : null}
         {store.serverStatus === "unreachable" ? <Muted>{t("settings.serverFailed")}</Muted> : null}
+        {!store.serverAddress ? <Muted>{t("settings.serverMissing")}</Muted> : null}
       </Card>
 
       <Card style={{ gap: 10 }}>

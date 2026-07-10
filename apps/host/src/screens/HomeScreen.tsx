@@ -8,6 +8,7 @@ export function HomeScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const go = useHostStore((s) => s.go);
+  const configured = useHostStore((s) => Boolean(s.serverAddress));
   const hasServer = useHostStore((s) => Boolean(s.serverAddress && s.hostKey));
 
   return (
@@ -24,7 +25,11 @@ export function HomeScreen() {
         />
         <PrimaryButton label={t("home.settings")} variant="ghost" onPress={() => go("settings")} />
       </View>
-      {!hasServer ? <Muted style={{ textAlign: "center" }}>{t("errors.noServer")}</Muted> : null}
+      {!configured ? (
+        <Muted style={{ textAlign: "center" }}>{t("settings.serverMissing")}</Muted>
+      ) : !hasServer ? (
+        <Muted style={{ textAlign: "center" }}>{t("errors.noServer")}</Muted>
+      ) : null}
     </View>
   );
 }

@@ -11,8 +11,9 @@ Everyone plays from their own phone.
 
 1. A small **game server** (Node.js, e.g. on a Hetzner VPS) runs the games and
    holds the Claude API key. Nobody's phone has to host anything.
-2. **Host** opens the app on their phone, enters the server address + family
-   passcode once in Settings, and starts a new game by typing a few favorite shows.
+2. **Host** opens the app on their phone, enters the family passcode once in
+   Settings, and starts a new game by typing a few favorite shows. The server
+   address is baked into the app build — nobody ever types an IP.
 3. The AI DM **builds a world** from that mashup and suggests cute character concepts.
 4. Family members **scan a QR code** and join from their phone's browser —
    no app install needed.
@@ -72,8 +73,9 @@ pnpm --filter @familyquest/player build
 FQ_MOCK_DM=1 FQ_HOST_KEY=test pnpm --filter @familyquest/server dev
 ```
 
-Point the host app's Settings at `<your-machine-ip>:8787` with passcode `test`.
-Use `ANTHROPIC_API_KEY=sk-ant-…` instead of `FQ_MOCK_DM=1` for the real DM.
+Build the host app against it with `EXPO_PUBLIC_FQ_SERVER=<your-machine-ip>:8787`
+(see below) and enter passcode `test` in Settings. Use `ANTHROPIC_API_KEY=sk-ant-…`
+instead of `FQ_MOCK_DM=1` for the real DM.
 
 Server environment:
 
@@ -102,10 +104,19 @@ One-time setup:
 3. Push — or run the *Deploy to Hetzner* workflow manually. The container
    listens on port 80.
 
-Then in the host app's Settings: server address = your server's IP,
-passcode = the `FQ_HOST_KEY` you chose. Players join at
-`http://<server-ip>/join?g=…` via the QR code — no setup on their side.
+Players join at `http://<server-ip>/join?g=…` via the QR code — no setup on
+their side.
 
-Build the host app with `npx expo run:ios|android` inside `apps/host`. Since
-the embedded TCP server (and its native module) is gone, the app is a plain
-Expo project again.
+## Building the host app
+
+The server address is a build-time constant — users never see or type it.
+Inside `apps/host`, either export it or put it in `apps/host/.env`
+(gitignored):
+
+```sh
+echo "EXPO_PUBLIC_FQ_SERVER=<your-server-ip>" > .env   # or host:port
+npx expo run:ios   # or run:android
+```
+
+The only thing a host enters in the app is the family passcode
+(`FQ_HOST_KEY`). Rebuild the app if the server address ever changes.
