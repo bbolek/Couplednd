@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { avatarColors, type Avatar } from "@familyquest/shared";
 import { useTheme } from "./theme";
+import { SpriteImage } from "./sprite";
 
 /** Chunky, tactile primary button — presses "down" like the web client's. */
 export function PrimaryButton({
@@ -176,9 +177,14 @@ export function AvatarBadge({
         borderWidth: 3,
         borderColor: "rgba(255,255,255,0.7)",
         opacity: knockedOut ? 0.55 : 1,
+        overflow: avatar.sprite ? "hidden" : undefined,
       }}
     >
-      <Text style={{ fontSize: size * 0.5 }}>{avatar.emoji}</Text>
+      {avatar.sprite ? (
+        <SpriteImage sprite={avatar.sprite} size={size - 6} />
+      ) : (
+        <Text style={{ fontSize: size * 0.5 }}>{avatar.emoji}</Text>
+      )}
       {avatar.accessory ? (
         <Text style={{ position: "absolute", top: -8, right: -6, fontSize: size * 0.34 }}>
           {avatar.accessory}

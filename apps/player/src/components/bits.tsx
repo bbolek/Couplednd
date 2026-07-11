@@ -1,5 +1,6 @@
 import type { Avatar, Character } from "@familyquest/shared";
 import { avatarColors, type AvatarColorName } from "@familyquest/shared";
+import { SpriteImg } from "./sprite.js";
 
 export function resolveAvatarColor(token: string): string {
   return (avatarColors as Record<string, string>)[token] ?? avatarColors.sunshine;
@@ -22,9 +23,10 @@ export function AvatarBadge({
         height: size,
         fontSize: size * 0.54,
         background: resolveAvatarColor(avatar.color),
+        overflow: avatar.sprite ? "hidden" : undefined,
       }}
     >
-      {avatar.emoji}
+      {avatar.sprite ? <SpriteImg sprite={avatar.sprite} size={size} /> : avatar.emoji}
       {avatar.accessory ? <span className="accessory">{avatar.accessory}</span> : null}
     </span>
   );

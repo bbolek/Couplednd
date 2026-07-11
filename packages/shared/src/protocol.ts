@@ -20,10 +20,26 @@ export const statsSchema = z.object(
   ) as Record<(typeof STATS)[number], z.ZodNumber>,
 );
 
+const spriteToken = z.string().max(32);
+
+export const avatarSpriteSchema = z.object({
+  skinColor: spriteToken,
+  top: spriteToken,
+  hairColor: spriteToken,
+  hatColor: spriteToken,
+  clothing: spriteToken,
+  clothesColor: spriteToken,
+  eyes: spriteToken,
+  mouth: spriteToken,
+  accessory: spriteToken,
+  facialHair: spriteToken,
+});
+
 export const avatarSchema = z.object({
   emoji: z.string().min(1).max(8),
   color: z.string().min(1).max(24),
   accessory: z.string().min(1).max(8).optional(),
+  sprite: avatarSpriteSchema.optional(),
 });
 
 export const joinMessage = z.object({

@@ -1,4 +1,5 @@
 import type { Stats, RollResult, StatName } from "./rules.js";
+import type { AvatarSprite } from "./avatarSprite.js";
 
 export type Language = "en" | "tr";
 
@@ -25,12 +26,14 @@ export type TaskId = string;
 export type CharacterStatus = "ok" | "knockedOut" | "rescued";
 
 export interface Avatar {
-  /** Emoji used as the character's face, e.g. "🦊". */
+  /** Emoji used as the character's face, e.g. "🦊". Fallback when no sprite. */
   emoji: string;
   /** Token from the avatar palette, resolved to a color by the theme. */
   color: string;
   /** Optional accessory emoji layered on the badge, e.g. "🎩". */
   accessory?: string;
+  /** Customized sprite look (DiceBear avataaars); preferred over emoji when set. */
+  sprite?: AvatarSprite;
 }
 
 export interface Item {

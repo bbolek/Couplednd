@@ -18,8 +18,18 @@
     },
     "android": {
       "package": "com.familyquest.app",
-      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "ACCESS_WIFI_STATE"]
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE"
+      ]
     },
-    "plugins": ["expo-dev-client", "expo-secure-store", "expo-font", "expo-localization"]
+    "plugins": [
+      "expo-dev-client",
+      "expo-secure-store",
+      "expo-font",
+      "expo-localization",
+      "expo-status-bar"
+    ]
   }
 }

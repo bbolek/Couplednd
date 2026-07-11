@@ -10,6 +10,8 @@
     "test": "echo 'covered by devhost integration tests'"
   },
   "dependencies": {
+    "@dicebear/avataaars": "^9",
+    "@dicebear/core": "^9",
     "@familyquest/shared": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

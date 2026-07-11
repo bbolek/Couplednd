@@ -4,3 +4,4 @@ export * from "./events.js";
 export * from "./protocol.js";
 export * from "./reducers.js";
 export * from "./theme.js";
+export * from "./avatarSprite.js";

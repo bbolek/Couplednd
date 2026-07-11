@@ -1,11 +1,25 @@
 import { useMemo, useState } from "react";
 import {
   avatarColors,
+  defaultSprite,
+  isSpriteHat,
   isValidAllocation,
+  randomSprite,
+  SPRITE_ACCESSORIES,
+  SPRITE_CLOTHING,
+  SPRITE_EYES,
+  SPRITE_FABRIC_COLORS,
+  SPRITE_FACIAL_HAIR,
+  SPRITE_HAIR,
+  SPRITE_HAIR_COLORS,
+  SPRITE_HATS,
+  SPRITE_MOUTHS,
+  SPRITE_SKIN_COLORS,
   STAT_POOL,
   STATS,
   statMeta,
   type Avatar,
+  type AvatarSprite,
   type CharacterConcept,
   type StatName,
   type Stats,
@@ -13,12 +27,7 @@ import {
 import { t } from "../i18n.js";
 import { usePlayerStore } from "../state/playerStore.js";
 import { AvatarBadge } from "../components/bits.js";
-
-const FACE_EMOJI = [
-  "🦊", "🐶", "🐱", "🐰", "🐻", "🐼", "🦁", "🐸",
-  "🦄", "🐲", "🤖", "🧚", "🦉", "🐙", "🐨", "👾",
-];
-const ACCESSORIES = ["", "🎩", "👑", "🎀", "🕶️", "⚔️", "🪄", "🌸"];
+import { SpriteImg } from "../components/sprite.js";
 
 export interface CharacterDraft {
   name: string;
@@ -29,6 +38,15 @@ export interface CharacterDraft {
 }
 
 const EMPTY_STATS: Stats = { brave: 2, smart: 2, charm: 2, sneaky: 2 };
+
+type LookTab = "skin" | "hair" | "outfit" | "face" | "extras";
+const LOOK_TABS: { id: LookTab; emoji: string }[] = [
+  { id: "skin", emoji: "🖐️" },
+  { id: "hair", emoji: "💇" },
+  { id: "outfit", emoji: "👕" },
+  { id: "face", emoji: "😊" },
+  { id: "extras", emoji: "🕶️" },
+];
 
 /** Live personality line from the stat spread — makes numbers feel alive. */
 function personality(stats: Stats): string {
@@ -41,6 +59,31 @@ function personality(stats: Stats): string {
   return `${statMeta[hi].emoji} ${hiName}! · ${statMeta[lo].emoji} ${loName}…`;
 }
 
+function ColorSwatches({
+  colors,
+  value,
+  onPick,
+}: {
+  colors: readonly string[];
+  value: string;
+  onPick: (hex: string) => void;
+}) {
+  return (
+    <div className="swatch-row">
+      {colors.map((hex) => (
+        <button
+          key={hex}
+          type="button"
+          aria-label={`#${hex}`}
+          className={`swatch${value === hex ? " selected" : ""}`}
+          style={{ background: `#${hex}` }}
+          onClick={() => onPick(hex)}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function CharacterCreateScreen({
   onSubmit,
 }: {
@@ -50,9 +93,9 @@ export function CharacterCreateScreen({
   const [step, setStep] = useState(0);
   const [concept, setConcept] = useState<CharacterConcept | null>(null);
   const [name, setName] = useState("");
-  const [face, setFace] = useState(FACE_EMOJI[0]!);
   const [color, setColor] = useState<string>("sunshine");
-  const [accessory, setAccessory] = useState("");
+  const [sprite, setSprite] = useState<AvatarSprite>(() => defaultSprite());
+  const [tab, setTab] = useState<LookTab>("skin");
   const [stats, setStats] = useState<Stats>(EMPTY_STATS);
 
   const spent = STATS.reduce((sum, s) => sum + stats[s], 0);
@@ -66,7 +109,6 @@ export function CharacterCreateScreen({
     setConcept(c);
     setName(c.name);
     setStats(c.suggestedStats);
-    if (c.emoji && FACE_EMOJI.includes(c.emoji)) setFace(c.emoji);
     setStep(1);
   }
 
@@ -78,7 +120,11 @@ export function CharacterCreateScreen({
     setStats(next);
   }
 
-  const avatar: Avatar = { emoji: face, color, ...(accessory ? { accessory } : {}) };
+  function set(patch: Partial<AvatarSprite>) {
+    setSprite((s) => ({ ...s, ...patch }));
+  }
+
+  const avatar: Avatar = { emoji: concept?.emoji ?? "🙂", color, sprite };
 
   return (
     <div className="screen" style={{ gap: 20 }}>
@@ -157,7 +203,7 @@ export function CharacterCreateScreen({
       )}
 
       {stepIndex === 2 && (
-        <section className="stack" style={{ flex: 1 }}>
+        <section className="stack" style={{ flex: 1, gap: 12 }}>
           <div>
             <h2 style={{ fontSize: 20 }}>{t("character.stepAvatar")}</h2>
             <p className="muted" style={{ margin: "4px 0 0" }}>
@@ -165,58 +211,175 @@ export function CharacterCreateScreen({
             </p>
           </div>
 
-          <div className="center" style={{ padding: 8 }}>
-            <AvatarBadge avatar={avatar} size={96} />
+          <div className="center" style={{ gap: 10 }}>
+            <div className="avatar-stage">
+              <AvatarBadge avatar={avatar} size={128} />
+              <button
+                type="button"
+                className="shuffle-btn"
+                aria-label={t("character.surprise")}
+                onClick={() => setSprite(randomSprite())}
+              >
+                🎲
+              </button>
+            </div>
+            <div className="swatch-row">
+              {Object.entries(avatarColors).map(([token, hex]) => (
+                <button
+                  key={token}
+                  type="button"
+                  aria-label={token}
+                  className={`swatch${color === token ? " selected" : ""}`}
+                  style={{ background: hex }}
+                  onClick={() => setColor(token)}
+                />
+              ))}
+            </div>
           </div>
 
-          <div className="row" style={{ flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-            {FACE_EMOJI.map((e) => (
+          <div className="look-tabs">
+            {LOOK_TABS.map((lt) => (
               <button
-                key={e}
+                key={lt.id}
                 type="button"
-                className={`chip${face === e ? " selected" : ""}`}
-                style={{ fontSize: 22, padding: "6px 10px" }}
-                onClick={() => setFace(e)}
+                className={`chip${tab === lt.id ? " selected" : ""}`}
+                onClick={() => setTab(lt.id)}
               >
-                {e}
+                <span aria-hidden>{lt.emoji}</span> {t(`character.tab_${lt.id}`)}
               </button>
             ))}
           </div>
 
-          <div className="row" style={{ gap: 10, justifyContent: "center" }}>
-            {Object.entries(avatarColors).map(([token, hex]) => (
-              <button
-                key={token}
-                type="button"
-                aria-label={token}
-                onClick={() => setColor(token)}
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: "50%",
-                  background: hex,
-                  border:
-                    color === token ? "3px solid var(--text)" : "3px solid transparent",
-                  cursor: "pointer",
-                  transform: color === token ? "scale(1.2)" : undefined,
-                  transition: "transform 120ms",
-                }}
+          <div className="look-panel stack" style={{ gap: 12 }}>
+            {tab === "skin" && (
+              <ColorSwatches
+                colors={SPRITE_SKIN_COLORS}
+                value={sprite.skinColor}
+                onPick={(hex) => set({ skinColor: hex })}
               />
-            ))}
-          </div>
+            )}
 
-          <div className="row" style={{ flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-            {ACCESSORIES.map((a) => (
-              <button
-                key={a || "none"}
-                type="button"
-                className={`chip${accessory === a ? " selected" : ""}`}
-                style={{ fontSize: 20, padding: "6px 10px" }}
-                onClick={() => setAccessory(a)}
-              >
-                {a || "✖️"}
-              </button>
-            ))}
+            {tab === "hair" && (
+              <>
+                <div className="sprite-grid">
+                  {["", ...SPRITE_HAIR, ...SPRITE_HATS].map((top) => (
+                    <button
+                      key={top || "bald"}
+                      type="button"
+                      className={`sprite-tile zoom-head${sprite.top === top ? " selected" : ""}`}
+                      onClick={() => set({ top })}
+                    >
+                      {top === "" ? (
+                        <span className="sprite-none">🥚</span>
+                      ) : (
+                        <SpriteImg sprite={{ ...sprite, top }} size={132} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {sprite.top !== "" && (
+                  <ColorSwatches
+                    colors={isSpriteHat(sprite.top) ? SPRITE_FABRIC_COLORS : SPRITE_HAIR_COLORS}
+                    value={isSpriteHat(sprite.top) ? sprite.hatColor : sprite.hairColor}
+                    onPick={(hex) =>
+                      set(isSpriteHat(sprite.top) ? { hatColor: hex } : { hairColor: hex })
+                    }
+                  />
+                )}
+              </>
+            )}
+
+            {tab === "outfit" && (
+              <>
+                <div className="sprite-grid">
+                  {SPRITE_CLOTHING.map((clothing) => (
+                    <button
+                      key={clothing}
+                      type="button"
+                      className={`sprite-tile${sprite.clothing === clothing ? " selected" : ""}`}
+                      onClick={() => set({ clothing })}
+                    >
+                      <SpriteImg sprite={{ ...sprite, clothing }} size={66} />
+                    </button>
+                  ))}
+                </div>
+                <ColorSwatches
+                  colors={SPRITE_FABRIC_COLORS}
+                  value={sprite.clothesColor}
+                  onPick={(hex) => set({ clothesColor: hex })}
+                />
+              </>
+            )}
+
+            {tab === "face" && (
+              <>
+                <div className="muted look-label">{t("character.eyes")}</div>
+                <div className="sprite-grid">
+                  {SPRITE_EYES.map((eyes) => (
+                    <button
+                      key={eyes}
+                      type="button"
+                      className={`sprite-tile zoom-face${sprite.eyes === eyes ? " selected" : ""}`}
+                      onClick={() => set({ eyes })}
+                    >
+                      <SpriteImg sprite={{ ...sprite, eyes }} size={132} />
+                    </button>
+                  ))}
+                </div>
+                <div className="muted look-label">{t("character.mouth")}</div>
+                <div className="sprite-grid">
+                  {SPRITE_MOUTHS.map((mouth) => (
+                    <button
+                      key={mouth}
+                      type="button"
+                      className={`sprite-tile zoom-face${sprite.mouth === mouth ? " selected" : ""}`}
+                      onClick={() => set({ mouth })}
+                    >
+                      <SpriteImg sprite={{ ...sprite, mouth }} size={132} />
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {tab === "extras" && (
+              <>
+                <div className="muted look-label">{t("character.glasses")}</div>
+                <div className="sprite-grid">
+                  {["", ...SPRITE_ACCESSORIES].map((accessory) => (
+                    <button
+                      key={accessory || "none"}
+                      type="button"
+                      className={`sprite-tile zoom-face${sprite.accessory === accessory ? " selected" : ""}`}
+                      onClick={() => set({ accessory })}
+                    >
+                      {accessory === "" ? (
+                        <span className="sprite-none">✖️</span>
+                      ) : (
+                        <SpriteImg sprite={{ ...sprite, accessory }} size={132} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="muted look-label">{t("character.beard")}</div>
+                <div className="sprite-grid">
+                  {["", ...SPRITE_FACIAL_HAIR].map((facialHair) => (
+                    <button
+                      key={facialHair || "none"}
+                      type="button"
+                      className={`sprite-tile zoom-face${sprite.facialHair === facialHair ? " selected" : ""}`}
+                      onClick={() => set({ facialHair })}
+                    >
+                      {facialHair === "" ? (
+                        <span className="sprite-none">✖️</span>
+                      ) : (
+                        <SpriteImg sprite={{ ...sprite, facialHair }} size={132} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="grow" />
